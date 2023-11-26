@@ -70,8 +70,8 @@ with DAG(
         python_callable=load_fact_data,
         op_kwargs={
             'table_file': PQ_TARGET_DIR + '/fct_outcomes.parquet',
-            'table_name': 'fct_outcomes'
-            DB_URL: 'postgresql+psycopg2://sudha:hunter2@db:5432/shelter'
+            'table_name': 'fct_outcomes',
+            'DB_URL': 'postgresql+psycopg2://sudha:hunter2@db:5432/shelter'
         }
     )
 

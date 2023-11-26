@@ -4,13 +4,15 @@ from airflow.operators.python import PythonOperator
 
 from datetime import datetime
 import os
-from etl_scripts.transform import transform_data
-from etl_scripts.load import load_data, load_fact_data
-from etl_scripts.transform_cloud import extract_data
+
+from etl_scripts.load_cloud import load_data, load_fact_data
+from etl_scripts.transform_cloud import extract_data, transform_data
 
 source_url = 'https://data.austintexas.gov/resource/9t4d-g238.csv' #used API
 AIRFLOW_HOME= os.environ.get('AIRFLOW_HOME', '/opt/airflow')
 CSV_TARGET_DIR= AIRFLOW_HOME + '/data/{{ ds }}/downloads'
+
+CSV_TARGET_FILENAME = 'outcomes_{{ ds }}.csv'
 CSV_TARGET_FILE= CSV_TARGET_DIR+'/outcomes_{{ ds }}.csv'
 
 PQ_TARGET_DIR = AIRFLOW_HOME + '/data/{{ ds }}/processed'
@@ -30,7 +32,8 @@ with DAG(
         task_id="extract",
         python_callable=extract_data,
         op_kwargs = {
-            'source_csv': CSV_TARGET_FILE, 
+            'source_url': source_url,
+            'csv_filename': CSV_TARGET_FILENAME, 
         }
     )
 
@@ -47,7 +50,7 @@ with DAG(
         task_id="load_animals_dim",
         python_callable=load_data,
         op_kwargs = {
-            'table_file': PQ_TARGET_DIR+'/dim_animals.parquet', 
+            'table_file': 'dim_animals.parquet', 
             'table_name': 'dim_animals',
             'key': 'animal_id'
         }
@@ -58,7 +61,7 @@ with DAG(
         task_id="load_dates_dim",
         python_callable=load_data,
         op_kwargs = {
-            'table_file': PQ_TARGET_DIR+'/dim_dates.parquet', 
+            'table_file': 'dim_dates.parquet', 
             'table_name': 'dim_dates',
             'key': 'date_id'
         }
@@ -68,7 +71,7 @@ with DAG(
         task_id="load_outcome_types_dim",
         python_callable=load_data,
         op_kwargs = {
-            'table_file': PQ_TARGET_DIR+'/dim_outcome_types.parquet', 
+            'table_file': 'dim_outcome_types.parquet', 
             'table_name': 'dim_outcome_types',
             'key': 'outcome_type_id'
         }
@@ -78,9 +81,9 @@ with DAG(
         task_id="load_outcome_fct", 
         python_callable=load_fact_data,
         op_kwargs={
-            'table_file': PQ_TARGET_DIR + '/fct_outcomes.parquet',
-            'table_name': 'fct_outcomes'
-            DB_URL: 'postgresql+psycopg2://sudha:hunter2@db:5432/shelter'
+            'table_file': 'fct_outcomes.parquet',
+            'table_name': 'fct_outcomes',
+            'DB_URL': 'postgresql+psycopg2://sudha:hunter2@db:5432/shelter'
         }
     )
 
